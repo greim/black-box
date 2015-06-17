@@ -1,0 +1,31 @@
+{
+  "name": "black-box",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/greim/machine"
+  },
+  "bugs": {
+    "url": "https://github.com/greim/machine/issues"
+  },
+  "description": "Put values in, get values out.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node node_modules/.bin/mocha"
+  },
+  "keywords": [
+    "fsm",
+    "finite",
+    "state",
+    "machine",
+    "control"
+  ],
+  "author": "gregreimer@gmail.com",
+  "license": "MIT",
+  "dependencies": {
+    "co": "^4.5.4"
+  },
+  "devDependencies": {
+    "mocha": "^2.2.5"
+  }
+}

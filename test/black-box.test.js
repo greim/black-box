@@ -181,4 +181,38 @@ describe('black-box', () => {
     box.end()
     return box.completion()
   })
+
+  it('box should sample', () => {
+    let box = new BlackBox(function*(coms){ coms.out(3) })
+    let sample = box.sample()
+    assert.strictEqual(sample, 3)
+  })
+
+  it('box should is', () => {
+    let box = new BlackBox(function*(coms){ coms.out(4) })
+    assert.ok(!box.is(5))
+    assert.ok(box.is(4))
+    assert.ok(!box.is(3))
+  })
+
+  it('coms should sample', () => {
+    let box = new BlackBox(function*(coms){
+      yield immediate()
+      let sample = coms.sample()
+      assert.strictEqual(sample, 1)
+    })
+    box.in(1)
+    return box.completion()
+  })
+
+  it('coms should is', () => {
+    let box = new BlackBox(function*(coms){
+      yield immediate()
+      assert.ok(!coms.is(3))
+      assert.ok(coms.is(2))
+      assert.ok(!coms.is(1))
+    })
+    box.in(2)
+    return box.completion()
+  })
 })

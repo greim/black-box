@@ -16,11 +16,9 @@ let box = new BlackBox(function*(coms) {
   }
 }, { mode: 'unicast' })
 
-box.in(2).then(() => {
-  return box.out()
-}).then(n => {
-  assert.equal(n, 4)
-})
+box.in(2)
+.then(() => box.out())
+.then(n => assert.equal(n, 4))
 ```
 
 ```js

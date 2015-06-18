@@ -14,12 +14,12 @@ import { BlackBox } from '../index'
 var box = new BlackBox(function*(coms) {
   let state = 'locked'
   while (true) {
-    let input = yield coms.receive()
+    let input = yield coms.in()
     if (input === 'push' && state === 'unlocked') {
-      coms.send('lock')
+      coms.out('lock')
       state = 'locked'
     } else if (input === 'coin' && state === 'locked') {
-      coms.send('unlock')
+      coms.out('unlock')
       state = 'unlocked'
     }
   }

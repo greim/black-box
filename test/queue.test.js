@@ -49,22 +49,16 @@ describe('queue', () => {
     assert.deepEqual(pair, [1, undefined])
   }))
 
-  it('should resolve a nested set', co.wrap(function*(){
-    let q = new Queue()
-      , set = yield [q.in(1), q.in(2), q.in(3), q.out(), q.out(), q.out()]
-    assert.deepEqual(set, [undefined, undefined, undefined, 1, 2, 3])
-  }))
-
-  it('should resolve an inverted nested set', co.wrap(function*(){
-    let q = new Queue()
-      , set = yield [q.out(), q.out(), q.out(), q.in(1), q.in(2), q.in(3)]
-    assert.deepEqual(set, [1, 2, 3, undefined, undefined, undefined])
-  }))
-
   it('should resolve an interspersed set', co.wrap(function*(){
     let q = new Queue()
       , set = yield [q.in(1), q.out(), q.in(2), q.out(), q.in(3), q.out()]
     assert.deepEqual(set, [undefined, 1, undefined, 2, undefined, 3])
+  }))
+
+  it('should resolve an interspersed set', co.wrap(function*(){
+    let q = new Queue()
+      , set = yield [q.out(), q.in(1), q.out(), q.in(2), q.out(), q.in(3)]
+    assert.deepEqual(set, [1, undefined, 2, undefined, 3, undefined])
   }))
 
   it('should not resolve an unbalanced set', done => {
@@ -104,44 +98,30 @@ describe('queue', () => {
       queue.in('a').then(() => step(1)),
       queue.out().then(() => step(2)),
       queue.in('b').then(() => step(3)),
-      queue.in('c').then(() => step(4)),
-      queue.out().then(() => step(5)),
-      queue.out().then(() => step(6)),
-      queue.in('d').then(() => step(7)),
     ]
     return Promise.all(proms)
   })
 
   it('should limit supply', () => {
-    let queue = new Queue(2)
+    let queue = new Queue()
     let p = queue.in(1).catch(err => {
       assert.ok(err.message.includes('too much supply'))
     })
     queue.in(2)
-    queue.in(3)
     return p
   })
 
   it('should limit demand', () => {
-    let queue = new Queue(2)
+    let queue = new Queue()
     let p = queue.out().catch(err => {
       assert.ok(err.message.includes('too much demand'))
     })
     queue.out()
-    queue.out()
     return p
   })
 
-  it('should be noop with zero limit', () => {
-    let queue = new Queue(0)
-    assert.strictEqual(queue.in(1), undefined)
-    assert.strictEqual(queue.out(), undefined)
-  })
-
-  it('should be noop with zero limit', () => {
-    let queue = new Queue(0)
-    assert.strictEqual(queue.in(1), undefined)
-    assert.strictEqual(queue.out(), undefined)
+  it('should be noop with broadcast', () => {
+    let queue = new Queue(false)
     assert.strictEqual(queue.in(1), undefined)
     assert.strictEqual(queue.out(), undefined)
   })

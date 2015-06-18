@@ -81,78 +81,6 @@ describe('black-box', () => {
     }).completion()
   })
 
-  it('should buffer outbound', co.wrap(function*() {
-    let step = sequence()
-    let box = new BlackBox(function*(coms){
-      step(0)
-      coms.out(1)
-      coms.out(2)
-      coms.out(3)
-      step(1)
-    })
-    step(2)
-    let outs = [box.out(), box.out(), box.out()]
-    step(3)
-    outs = yield outs
-    step(4)
-    assert.deepEqual(outs, [1, 2, 3])
-  }))
-
-  it('should defecit outbound', co.wrap(function*() {
-    let step = sequence()
-    let box = new BlackBox(function*(coms){
-      step(0)
-      yield immediate()
-      step(3)
-      coms.out(1)
-      coms.out(2)
-      coms.out(3)
-      step(4)
-    })
-    step(1)
-    let outs = [box.out(), box.out(), box.out()]
-    step(2)
-    outs = yield outs
-    step(5)
-    assert.deepEqual(outs, [1, 2, 3])
-  }))
-
-  it('should buffer inbound', co.wrap(function*() {
-    let step = sequence()
-    let box = new BlackBox(function*(coms){
-      step(0)
-      yield immediate()
-      step(3)
-      let ins = [coms.in(), coms.in(), coms.in()]
-      step(4)
-      ins = yield ins
-      step(5)
-      assert.deepEqual(ins, [1, 2, 3])
-    })
-    step(1)
-    box.in(1)
-    box.in(2)
-    box.in(3)
-    step(2)
-  }))
-
-  it('should defecit inbound', co.wrap(function*() {
-    let step = sequence()
-    let box = new BlackBox(function*(coms){
-      step(0)
-      let ins = [coms.in(), coms.in(), coms.in()]
-      step(1)
-      ins = yield ins
-      step(4)
-      assert.deepEqual(ins, [1, 2, 3])
-    })
-    step(2)
-    box.in(1)
-    box.in(2)
-    box.in(3)
-    step(3)
-  }))
-
   it('should emit outbound vals', () => {
     let box = new BlackBox(function*(coms){
       for (let i=0; i<3; i++) {
@@ -214,5 +142,24 @@ describe('black-box', () => {
     })
     box.in(2)
     return box.completion()
+  })
+
+  it('should ping-pong', () => {
+    let box = new BlackBox(function*(coms){
+      while (true) {
+        let input = yield coms.in()
+        if (input === 'stop') { break }
+        yield coms.out(input)
+      }
+    })
+    let p = co(function*() {
+      for (let i=0; i<3; i++) {
+        yield box.in(i)
+        let x = yield box.out()
+        assert.strictEqual(x, i)
+      }
+      yield box.in('stop')
+    })
+    return Promise.all([p, box.completion()])
   })
 })

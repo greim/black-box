@@ -162,4 +162,12 @@ describe('black-box', () => {
     })
     return Promise.all([p, box.completion()])
   })
+
+  it('should set context', () => {
+    let box = new BlackBox(function*(){
+      yield immediate()
+      assert.strictEqual(this, box)
+    })
+    return box.completion()
+  })
 })

@@ -7,122 +7,122 @@
 
 import assert from 'assert'
 import co from 'co'
-import { Queue } from '../lib/queue'
+import { Channel } from '../lib/channel'
 import { sequence } from '../lib/sequence'
 
-describe('queue', () => {
+describe('channel', () => {
 
   it('should construct without error', () => {
-    new Queue()
+    new Channel()
   })
 
   it('should construct an object', () => {
-    let queue = new Queue()
-    assert.strictEqual(typeof queue, 'object')
+    let channel = new Channel()
+    assert.strictEqual(typeof channel, 'object')
   })
 
   it('should not construct without "new" keyword', () => {
-    assert.throws(() => Queue(), 'as a function')
+    assert.throws(() => Channel(), 'as a function')
   })
 
   it('in() should return a promise', () => {
-    let queue = new Queue()
-      , p = queue.in(1)
+    let channel = new Channel()
+      , p = channel.in(1)
     assert.ok(p instanceof Promise)
   })
 
   it('out() should return a promise', () => {
-    let queue = new Queue()
-      , p = queue.out()
+    let channel = new Channel()
+      , p = channel.out()
     assert.ok(p instanceof Promise)
   })
 
   it('should resolve a pair, in first', co.wrap(function*(){
-    let queue = new Queue()
-      , pair = yield [queue.in(1), queue.out()]
+    let channel = new Channel()
+      , pair = yield [channel.in(1), channel.out()]
     assert.deepEqual(pair, [undefined, 1])
   }))
 
   it('should resolve a pair, out first', co.wrap(function*(){
-    let queue = new Queue()
-      , pair = yield [queue.out(), queue.in(1)]
+    let channel = new Channel()
+      , pair = yield [channel.out(), channel.in(1)]
     assert.deepEqual(pair, [1, undefined])
   }))
 
   it('should resolve an interspersed set', co.wrap(function*(){
-    let q = new Queue()
+    let q = new Channel()
       , set = yield [q.in(1), q.out(), q.in(2), q.out(), q.in(3), q.out()]
     assert.deepEqual(set, [undefined, 1, undefined, 2, undefined, 3])
   }))
 
   it('should resolve an interspersed set', co.wrap(function*(){
-    let q = new Queue()
+    let q = new Channel()
       , set = yield [q.out(), q.in(1), q.out(), q.in(2), q.out(), q.in(3)]
     assert.deepEqual(set, [1, undefined, 2, undefined, 3, undefined])
   }))
 
   it('should not resolve an unbalanced set', done => {
-    let q = new Queue()
+    let q = new Channel()
       , set = [q.in(1), q.out(), q.in(2)]
     Promise.all(set).then(vals => done(new Error(`should not resolve ${vals.join(', ')}`)))
     setImmediate(() => done())
   })
 
   it('should not resolve an unbalanced set', done => {
-    let q = new Queue()
+    let q = new Channel()
       , set = [q.out(), q.in(1), q.out()]
     Promise.all(set).then(vals => done(new Error(`should not resolve ${vals.join(', ')}`)))
     setImmediate(() => done())
   })
 
   it('should sample', () => {
-    let queue = new Queue()
-    queue.in(3)
-    let sample = queue.sample()
+    let channel = new Channel()
+    channel.in(3)
+    let sample = channel.sample()
     assert.strictEqual(sample, 3)
   })
 
   it('should is', () => {
-    let queue = new Queue()
-    queue.in(4)
-    assert.ok(!queue.is(5))
-    assert.ok(queue.is(4))
-    assert.ok(!queue.is(3))
+    let channel = new Channel()
+    channel.in(4)
+    assert.ok(!channel.is(5))
+    assert.ok(channel.is(4))
+    assert.ok(!channel.is(3))
   })
 
   it('should do things in order', () => {
-    let queue = new Queue()
+    let channel = new Channel()
       , step = sequence()
     let proms = [
-      queue.out().then(() => step(0)),
-      queue.in('a').then(() => step(1)),
-      queue.out().then(() => step(2)),
-      queue.in('b').then(() => step(3)),
+      channel.out().then(() => step(0)),
+      channel.in('a').then(() => step(1)),
+      channel.out().then(() => step(2)),
+      channel.in('b').then(() => step(3)),
     ]
     return Promise.all(proms)
   })
 
   it('should limit supply', () => {
-    let queue = new Queue()
-    let p = queue.in(1).catch(err => {
+    let channel = new Channel()
+    let p = channel.in(1).catch(err => {
       assert.ok(err.message.includes('too much supply'))
     })
-    queue.in(2)
+    channel.in(2)
     return p
   })
 
   it('should limit demand', () => {
-    let queue = new Queue()
-    let p = queue.out().catch(err => {
+    let channel = new Channel()
+    let p = channel.out().catch(err => {
       assert.ok(err.message.includes('too much demand'))
     })
-    queue.out()
+    channel.out()
     return p
   })
 
   it('should be noop with broadcast', () => {
-    let queue = new Queue(false)
-    assert.strictEqual(queue.in(1), undefined)
-    assert.strictEqual(queue.out(), undefined)
+    let channel = new Channel(false)
+    assert.strictEqual(channel.in(1), undefined)
+    assert.strictEqual(channel.out(), undefined)
   })
 })

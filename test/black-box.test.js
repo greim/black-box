@@ -89,7 +89,7 @@ describe('black-box', () => {
       }
     })
     let step = sequence()
-    box.on('value', val => {
+    box.on('out', val => {
       assert.ok(val < 3)
       step(val)
     })

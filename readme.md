@@ -35,3 +35,23 @@ box.in('hello').then(() => { ... })
 box.out().then(val => { ... })
 ```
 
+## Examples
+
+### Finite State Machine
+
+```js
+let box = new BlackBox(function*(coms) {
+  let state = 'locked'
+  while (true) {
+    let command = yield coms.in()
+    if (command === 'coin' && state === 'locked') {
+      yield coms.out('locked => unlocked')
+      state = 'unlocked'
+    } else if (command === 'push' && state === 'unlocked') {
+      yield coms.out('unlocked => locked')
+      state = 'locked'
+    }
+  }
+})
+```
+

@@ -9,6 +9,8 @@ let box = new BlackBox(genFn, opts)
 
 ## Multicast Mode
 
+In/out is fire-and-forget.
+
 ```js
 let opts = { mode: 'multicast' }
 let box = new BlackBox(function*(coms) {
@@ -20,6 +22,8 @@ box.in('hello')
 ```
 
 ## Unicast Mode
+
+In/out is coordinated.
 
 ```js
 let opts = { mode: 'unicast' }
